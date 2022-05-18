@@ -1,3 +1,7 @@
+import { useMutation } from '@apollo/client';
+import Auth from '../utils/auth';
+import { ADD_USER } from './mutations';
+
 // route to get logged in user's info (needs the token)
 export const getMe = (token) => {
   return fetch('/api/users/me', {
@@ -5,16 +9,6 @@ export const getMe = (token) => {
       'Content-Type': 'application/json',
       authorization: `Bearer ${token}`,
     },
-  });
-};
-
-export const createUser = (userData) => {
-  return fetch('/api/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
   });
 };
 
