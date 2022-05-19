@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
 
-import { getMe, deleteBook } from '../utils/API';
 import { useQuery } from '@apollo/client';
 import Auth from '../utils/auth';
 import { QUERY_ME } from '../utils/queries';
 import { removeBookId } from '../utils/localStorage';
+import { useMutation } from '@apollo/client';
+import { REMOVE_BOOK } from '../utils/mutations';
 
 const SavedBooks = () => {
 	const {loading, data} = useQuery(QUERY_ME);
   const [userData, setUserData] = useState({});
+	const [removeBook, { error }] = useMutation(REMOVE_BOOK);
 
   // use this to determine if `useEffect()` hook needs to run again
   const userDataLength = Object.keys(userData).length;
 
   useEffect(() => {
+		console.log('useEffect');
     const getUserData = async () => {
 			if (data)
 				setUserData(data.me);
 		};
     getUserData();
-  }, [data]);
+  }, [data, userData]);
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -31,16 +34,14 @@ const SavedBooks = () => {
     }
 
     try {
-      const response = await deleteBook(bookId, token);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
-      // upon success, remove book's id from localStorage
-      removeBookId(bookId);
+			console.log(bookId);
+			console.log(typeof bookId);
+			const updatedUser = await removeBook({
+				variables: { bookId: bookId }
+			});
+			console.log(updatedUser);
+			setUserData(updatedUser.data.removeBook);
+			removeBookId(bookId);
     } catch (err) {
       console.error(err);
     }
@@ -51,8 +52,8 @@ const SavedBooks = () => {
     return <h2>LOADING...</h2>;
   }
 	
+	console.log('userData:');
 	console.log(userData);
-
   return (
     <>
       <Jumbotron fluid className='text-light bg-dark'>
